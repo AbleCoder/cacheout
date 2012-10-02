@@ -1,0 +1,27 @@
+{
+  "name": "cache-only",
+  "version": "0.0.0",
+  "description": "Cache buster script",
+  "main": "./lib/cache-only.js",
+  "scripts": {
+    "test": "node setup.js test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/koders/cache-only.git"
+  },
+  "keywords": [
+    "cache",
+    "busting",
+    "html",
+    "static",
+    "css",
+    "js"
+  ],
+  "author": {
+    "name": "AbleCoder",
+    "email": "an.able.coder@gmail.com",
+    "web": "http://AbleCoder.com"
+  },
+  "license": "MIT"
+}
