@@ -4,6 +4,8 @@
   "description": "A command-line tool to update a web project's static asset files (CSS/JS/etc.) to include checksum hashes for the purpose of cache busting.",
   "main": "./lib/index",
   "scripts": {
+    "prepublish": "coffee -o lib/ src/",
+    "postinstall": "node setup.js postinstall",
     "test": "node setup.js test"
   },
   "repository": {
