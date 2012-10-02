@@ -1,14 +1,14 @@
 {
-  "name": "cache-only",
+  "name": "cacheout",
   "version": "0.0.0",
-  "description": "Cache buster script",
-  "main": "./lib/cache-only.js",
+  "description": "A command-line tool to update a web project's static asset files (CSS/JS/etc.) to include checksum hashes for the purpose of cache busting.",
+  "main": "./lib/index",
   "scripts": {
     "test": "node setup.js test"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/koders/cache-only.git"
+    "url": "https://github.com/koders/cacheout.git"
   },
   "keywords": [
     "cache",
@@ -23,5 +23,8 @@
     "email": "an.able.coder@gmail.com",
     "web": "http://AbleCoder.com"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "argumentum": "~0.6.0"
+  }
 }
