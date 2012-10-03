@@ -56,4 +56,5 @@ module.exports = create = (options, callback = (->)) ->
 ###
 
 module.exports = cacheit = (options, callback = (->)) ->
-  console.log options
+  config = helpers.loadConfig options.configPath
+  console.log config, options
