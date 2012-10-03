@@ -1,6 +1,6 @@
 'use strict'
 
-cacheout = require './cacheit'
+cacheit = require './cacheit'
 
 module.exports = {
   cacheit: cacheit
