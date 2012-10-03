@@ -3,5 +3,8 @@
 path = require('path');
 fs = require('fs');
 
+# set in debug mode
+process.env['CACHEOUT_DEBUG'] = "*"
+
 src = path.join(path.dirname(fs.realpathSync(__filename)), '..', 'src');
 require(path.join(src, 'cli')).run();
