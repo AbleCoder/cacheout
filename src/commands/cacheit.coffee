@@ -60,10 +60,20 @@ findFiles = (root, match, callback = (->)) ->
     # wrench returned file list
     matchFiles files
 
-# default cachebust filename gen function
-defaultCbfn = (root, file) ->
-  # replace this with checksum
-  return "#{file}.cacheout"
+# default cachebust file generator
+defaultFileGen = (root, dest, filePath, callback) ->
+  # read in file
+  file = fs.readFileSync("#{root}/#{filePath}")
+
+  # generate new filename
+  genFilePath = "#{filePath}.cacheout"
+
+  # write new file
+  writeFile "#{dest}/#{genFilePath}", file, (error) ->
+    return callback error, null if error?
+
+    # return generated file path
+    callback null, genFilePath
 
 # Create copy of asset files in `root` that match any of the regex patterns
 # passed in `match` with cache busting filename in `dest` folder.
@@ -73,28 +83,33 @@ defaultCbfn = (root, file) ->
 #
 # root (string) Root path to search for asset files.
 # dest (string) Path to create new cache busting asset files.
-# callback (function) Function called on error or success, cb(error, createdFiles)
-#                 - On error called with error set, createdFiles null
-#                 - On success error null and createdFiles set as dict
+# callback (function) Function called on error or success, cb(error, genFiles)
+#                 - On error called with error set, genFiles null
+#                 - On success error null and genFiles set as dict
 #                   original file path key and the value being the new
-# fngen (function) Function that generates cache busting filename taking the
+# fileGenFn (function) Function that generates cache busting file taking the
 #                 following arguments:
 #                     root (str) Root path searched in
 #                     file (str) Path to file from `root`
-createCachebustedAssets = (root, dest, match, callback, fngen = defaultCbfn) ->
-  console.log 0, root, dest, match, callback, fngen
-  createdFiles = {}
+createCachebustedAssets = (root, dest, match, callback, fileGenFn = defaultFileGen) ->
+  genFiles = {}
+
+  findFilesComplete = ->
+    callback null, genFiles
 
   findFiles root, match, (error, file) ->
     # error: pass error back to callback
     return callback e, null if error?
 
-    # finished: pass created files dict back to callback
-    return callback null, createdFiles unless file?
+    # finished
+    return findFilesComplete() unless file? or error?
 
     # match: create new cachebust file and store details
-    genFile = fngen(root, file)
-    createdFiles[file] = genFile
+    fileGenFn root, dest, file, (error, gfile) ->
+      # error: pass error back to callback
+      return callback error, null if error?
+
+      genFiles[file] = gfile
 
 module.exports = cacheit = (options, callback = (->)) ->
   config = helpers.loadConfig options.configPath
@@ -104,11 +119,7 @@ module.exports = cacheit = (options, callback = (->)) ->
   console.log [srcPath, outPath, assetFiles, sourceFiles]
 
   createCachebustedAssets srcPath, outPath, assetFiles, (e, f) ->
+    return logger.error e if error?
+
+    # TODO: create function to update sources (*.html) with new generated files
     console.log "cacheit::createCachebustedAssets: response", e, f
-
-  return
-  # get list of assets
-  findFiles srcPath, assetFiles, (error, foundFiles) ->
-    return logger.error error if error?
-    console.log "Asset Files:", foundFiles
-
