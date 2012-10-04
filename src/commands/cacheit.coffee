@@ -2,6 +2,7 @@
 
 {exec} = require 'child_process'
 fs = require 'fs'
+crypto = require 'crypto'
 wrench = require 'wrench'
 mkdirp = require 'mkdirp'
 sysPath = require 'path'
@@ -60,20 +61,41 @@ findFiles = (root, match, callback = (->)) ->
     # wrench returned file list
     matchFiles files
 
+# defaut gen file name function
+genFileName = (basename, checksum, extension) ->
+  "#{basename}_#{checksum[0..20]}#{extension}"
+
 # default cachebust file generator
-defaultFileGen = (root, dest, filePath, callback) ->
-  # read in file
-  file = fs.readFileSync("#{root}/#{filePath}")
+fileGenChecksum = (genFileNameFn = genFileName) ->
+  getSha1 = (data) ->
+    shaSum = crypto.createHash('sha1')
+    shaSum.update(data).digest('hex')
 
-  # generate new filename
-  genFilePath = "#{filePath}.cacheout"
+  getBasename = (path) ->
+    (/(.+)(?=\.\w+$)/).exec(path)[0]
 
-  # write new file
-  writeFile "#{dest}/#{genFilePath}", file, (error) ->
-    return callback error, null if error?
+  getExtension = (path) ->
+    (/\.[a-zA-Z0-9]{1,}$/).exec(path)[0]
 
-    # return generated file path
-    callback null, genFilePath
+  genFileNameFn = _genFileName unless genFileNameFn?
+
+  return (root, dest, filePath, callback) ->
+    # read original file
+    file = fs.readFileSync("#{root}/#{filePath}")
+
+    # generate new filename
+    basename  = getBasename filePath
+    checksum  = getSha1 file
+    extension = getExtension filePath
+
+    genFilePath = genFileNameFn basename, checksum, extension
+
+    # write new file
+    writeFile "#{dest}/#{genFilePath}", file, (error) ->
+      return callback error, null if error?
+
+      # return generated file path
+      callback null, genFilePath
 
 # Create copy of asset files in `root` that match any of the regex patterns
 # passed in `match` with cache busting filename in `dest` folder.
@@ -91,7 +113,7 @@ defaultFileGen = (root, dest, filePath, callback) ->
 #                 following arguments:
 #                     root (str) Root path searched in
 #                     file (str) Path to file from `root`
-createCachebustedAssets = (root, dest, match, callback, fileGenFn = defaultFileGen) ->
+createCachebustedAssets = (root, dest, match, fileGenFn, callback) ->
   genFiles = {}
 
   findFilesComplete = ->
@@ -118,7 +140,7 @@ module.exports = cacheit = (options, callback = (->)) ->
 
   console.log [srcPath, outPath, assetFiles, sourceFiles]
 
-  createCachebustedAssets srcPath, outPath, assetFiles, (e, f) ->
+  createCachebustedAssets srcPath, outPath, assetFiles, fileGenChecksum(), (e, f) ->
     return logger.error e if error?
 
     # TODO: create function to update sources (*.html) with new generated files
