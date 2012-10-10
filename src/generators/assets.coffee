@@ -50,10 +50,10 @@ fileGenChecksum = (genFileNameFn = genFileName) ->
 
 
 exports.generateAssets = (root, dest, match, fileGenFn = fileGenChecksum(), callback = (->)) ->
-  generators.generateFileOnMatch root, dest, match, callback, (root, dest, file, addGenFile) ->
+  generators.generateFileOnMatch root, dest, match, callback, (root, dest, file, addGenFile, incGenFileCount) ->
+    incGenFileCount()
+
     # match: create new cachebust file and store details
     fileGenFn root, dest, file, (error, gfile) ->
       # error: pass error back to callback
       return callback error, null if error?
-
-      addGenFile file, gfile

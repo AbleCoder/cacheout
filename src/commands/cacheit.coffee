@@ -16,7 +16,7 @@ module.exports = cacheit = (options, callback = (->)) ->
   #console.log [srcPath, outPath, assetFiles, sourceFiles]
 
   generateAssets srcPath, outPath, assetFiles, null, (e, f) ->
-    return logger.error e if error?
+    return logger.error e if e?
 
     console.log "cacheit::generateAssets: response", e, f
     ###

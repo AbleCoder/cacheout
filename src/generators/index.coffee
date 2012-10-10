@@ -23,18 +23,28 @@ fs_utils = require '../fs_utils'
 #                     root (str) Root path searched in
 #                     file (str) Path to file from `root`
 exports.generateFileOnMatch = (root, dest, match, callback, onMatchFn) ->
-  genFiles = {}
+  genFileCount = 0
+  genFiles     = {}
 
   addGenFile = (origFile, genFile) ->
     genFiles[origFile] = genFile
+    --genFileCount
+    isGenFileDone()
+
+  incGenFileCount = ->
+    ++genFileCount
+
+  isGenFileDone= ->
+    if genFileCount < 1
+      console.log "isGenFileDone", genFileCount
+      return callback null, genFiles
 
   fs_utils.findFiles root, match, (error, file) ->
     # error: pass error back to callback
-    return callback e, null if error?
-
-    # finished
-    return callback null, genFiles unless file?
+    return callback error, null if error?
 
     # match
-    onMatchFn root, dest, file, addGenFile
+    return onMatchFn root, dest, file, addGenFile, incGenFileCount if file?
 
+    # finished
+    isGenFileDone()
